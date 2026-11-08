@@ -1,0 +1,8 @@
+{
+  "competition": "titanic",
+  "public_score": 0.76555,
+  "submitted_at": "2026-11-08T02:27:18-06:00",
+  "source": "https://www.kaggle.com/competitions/titanic/submissions",
+  "submission_sha256": "44c23c99c62dd22b677574e38adc91a96ca13448e4c8674adfe80ce537526549",
+  "note": "Observed from the completed Kaggle submission. This is an external public leaderboard accuracy, not a locally computed score or private score."
+}

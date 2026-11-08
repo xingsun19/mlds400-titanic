@@ -11,7 +11,7 @@ RUN python -m pip install --no-cache-dir -r requirements.txt \
     && python -m pip check
 
 RUN useradd --create-home --uid 10001 appuser
-COPY check_environment.py .
+COPY check_environment.py main.py kaggle_score.json .
 
 USER appuser
-CMD ["python", "check_environment.py"]
+CMD ["python", "main.py", "--data-dir", "/data", "--output-dir", "/outputs"]

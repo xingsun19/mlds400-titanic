@@ -1,5 +1,7 @@
-# Only these files are needed to build the Part 2 Python image.
+# Keep datasets, environments, and generated results out of the image.
 **
 !Dockerfile
 !requirements.txt
 !check_environment.py
+!main.py
+!kaggle_score.json
