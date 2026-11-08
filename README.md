@@ -1,176 +1,80 @@
 # mlds400-titanic
 
 Northwestern University MLDS 400, Homework 3: Titanic survival prediction using
-Python, R, and Docker.
+**Python, R, and Docker**. Both implementations explore the official data, fit
+logistic regression, evaluate a held-out validation set, and generate Kaggle
+predictions. All required analysis steps and results are printed to the terminal.
 
-This repository contains **Parts 1–4**: the GitHub workflow and complete Titanic
-logistic regression analyses in Python and R, each with its own Docker image.
-Both workflows also support local execution. The final submission merge is Part 5.
+**Use `main` for the final submission.** This repository uses `main` as the default
+branch; it serves the same role as `master` in the assignment. `develop` and the
+working branches preserve the development and pull request history.
 
-## Repository structure
+## Run the project in four steps
 
-```text
-mlds400-titanic/
-├── .gitignore
-├── README.md
-├── outputs/                    # Local generated results; ignored by Git
-│   ├── python/
-│   └── r/
-└── src/
-    ├── data/                   # Local Kaggle CSVs; ignored by Git
-    ├── python/
-    │   ├── .dockerignore
-    │   ├── Dockerfile
-    │   ├── requirements.txt
-    │   ├── check_environment.py
-    │   ├── kaggle_score.json
-    │   ├── main.py
-    │   └── test_main.py
-    └── r/
-        ├── .dockerignore
-        ├── Dockerfile
-        ├── install_packages.R
-        ├── kaggle_score.json
-        ├── main.R
-        └── test_main.R
-```
+You need Git, a running Docker engine, and a Kaggle account to download the data.
+**Local Python, R, or a virtual environment is not required for the Docker runs.**
+The first build needs internet access to download base images and packages;
+subsequent runs use the built images and local data.
 
-All project code lives in `src/`. Git does not track empty directories, and
-`src/data/` is deliberately ignored, so create that directory after cloning.
-The optional `.venv/` directory is also local only and ignored by Git. Do not
-commit or upload the dataset or virtual environment.
+Docker Desktop should be running on Windows/macOS, or Docker Engine on Linux.
+On this Mac, Docker uses Colima; start it with `colima start` if needed.
+`docker version` must show both client and server information before proceeding.
+See the [Colima setup instructions](https://github.com/abiosoft/colima#installation)
+if using that option.
 
-## Local setup
+### 1. Clone the final branch
 
-### GitHub Desktop and a text editor
-
-1. In GitHub Desktop, select **File → Clone Repository → URL**.
-2. Enter `https://github.com/xingsun19/mlds400-titanic.git` and choose a local path.
-3. Select **Clone**. If the repository is already cloned, use
-   **File → Add Local Repository** to select the existing folder instead.
-4. Select **Current Branch → develop** to use the latest assignment work.
-5. Open the repository folder in a text editor, such as Visual Studio Code.
-6. Open a terminal in the repository folder and run `mkdir -p src/data`.
-
-### Terminal alternative
-
-With Git installed, run these commands in a terminal (macOS, Linux, or Git Bash
-on Windows):
+Open a terminal and run:
 
 ```bash
-git clone https://github.com/xingsun19/mlds400-titanic.git
+git clone --branch main https://github.com/xingsun19/mlds400-titanic.git
 cd mlds400-titanic
-git switch develop
-mkdir -p src/data
-```
-
-Parts 2–4 are on `develop`; `main` retains the completed Part 1 checkpoint
-until the final submission merge.
-
-No dataset is needed for Parts 1 and 2. Parts 3 and 4 share the official Titanic
-files described below. Other Kaggle competitions also use the filename
-`train.csv`; make sure you download **Titanic**, not House Prices.
-
-## Part 2: run the Python environment with Docker
-
-Use a running Docker engine, such as Docker Desktop, Docker Engine on Linux, or
-Docker with Colima on macOS. Check that both the client and server are available:
-
-```bash
 docker version
 ```
 
-On a Mac using Colima, start it with `colima start` before running Docker
-commands. If you need to install it, follow the
-[Colima installation instructions](https://github.com/abiosoft/colima#installation)
-and install the Docker client and Buildx with Homebrew. Docker Desktop includes
-these components already.
+Run **all subsequent commands from this repository root**, where `README.md`
+is located. If using GitHub Desktop, clone the same URL, select **Current Branch
+→ main**, and open a terminal in that repository.
 
-From the repository root, build the image and run the environment check:
+### 2. Download the official Titanic data
 
-```bash
-docker build -t mlds400-titanic-python:part3 src/python
-docker run --rm mlds400-titanic-python:part3 python check_environment.py
-```
+1. Open the [Titanic data page](https://www.kaggle.com/competitions/titanic/data).
+2. Sign in to Kaggle. If needed, review and accept the competition rules yourself.
+3. Select **Download all files → Download as zip**.
+4. Extract `titanic.zip` and put `train.csv` and `test.csv` directly in `src/data/`.
 
-The first build downloads the Python base image and installs the exact versions
-in `src/python/requirements.txt`. It needs internet access and may take a few
-minutes. Later builds reuse cached dependencies. No local Python installation
-or dataset mount is required for this Docker check.
-
-The build context is limited to `src/python/`; `src/data/` and the root `.venv/`
-are outside it. The `.dockerignore` file further limits the build inputs to the
-files needed by this image. Dataset files are never copied into the image.
-The container runs as an unprivileged user. The explicit command above runs
-the smoke check; its default command runs the Part 3 model.
-
-Expected output includes:
-
-```text
-Part 2: Python environment check
-Python: 3.13.x
-numpy: 2.3.5
-pandas: 2.3.3
-scikit-learn: 1.7.2
-Smoke check passed: CSV parsing, numerical operations, and model fitting work.
-No Titanic files were read. Titanic analysis belongs to Part 3.
-```
-
-`3.13.x` above stands for the interpreter's actual patch version. The smoke check
-uses four synthetic rows created in memory to verify the libraries work
-together; its output is not a Titanic model or a Titanic accuracy result.
-
-## Part 2: optional local virtual environment
-
-Use **Python 3.13** for local development. Run these commands from the repository
-root (macOS or Linux):
-
-```bash
-python3.13 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r src/python/requirements.txt
-python -m pip check
-python src/python/check_environment.py
-deactivate
-```
-
-On Windows PowerShell, create the environment with `py -3.13 -m venv .venv` and
-activate it with `.\.venv\Scripts\Activate.ps1`, then use the same `python`
-commands. Activation is optional: on macOS/Linux you can run
-`.venv/bin/python src/python/check_environment.py` directly.
-
-The same requirements file is used locally and in Docker. It pins both direct
-dependencies (NumPy, pandas, and scikit-learn) and their runtime dependencies.
-Recreate the virtual environment on another computer instead of copying it.
-
-If Docker reports that it cannot connect to its daemon, start Docker Desktop or
-run `colima start`. If Python reports a missing package, confirm that you are
-using `.venv/bin/python` and install the requirements into that environment.
-
-## Part 3: download the data
-
-1. Open the [official Titanic data page](https://www.kaggle.com/competitions/titanic/data).
-2. Sign in to Kaggle. If you have not joined Titanic, review and accept its
-   competition rules yourself before downloading.
-3. Select **Download all files → Download as zip** and extract `titanic.zip`.
-4. Place `train.csv` and `test.csv` directly inside this repository's `src/data/`.
-   The optional `gender_submission.csv` is an example submission, not real labels.
-
-On macOS/Linux, if the ZIP is in Downloads, these commands extract the files:
+If the ZIP was saved to your Downloads folder, macOS/Linux users can run:
 
 ```bash
 mkdir -p src/data
 unzip -n "$HOME/Downloads/titanic.zip" -d src/data
 ```
 
-The official training file has 891 rows and includes `Survived`; the test file
-has 418 rows and does **not** include `Survived`. Keep all downloaded data local.
-The script never needs Kaggle credentials, and the container does not download
-or embed any data.
+On Windows PowerShell:
 
-## Part 3: run with Docker
+```powershell
+New-Item -ItemType Directory -Force src/data | Out-Null
+Expand-Archive -Path "$HOME/Downloads/titanic.zip" -DestinationPath src/data
+```
 
-From the repository root, with Docker running and the CSV files downloaded:
+If your browser used a different download location or filename, adjust the ZIP
+path. If the files are already present, skip extraction. Do not leave the CSVs
+inside an additional `titanic/` subdirectory. The expected files are:
+
+```text
+src/data/train.csv             # 891 passengers; includes Survived
+src/data/test.csv              # 418 passengers; no Survived column
+src/data/gender_submission.csv # Optional example, never treated as true labels
+```
+
+Other competitions also use the name `train.csv`; download **Titanic**, not
+House Prices. Both scripts check the required columns, training labels, and
+passenger IDs. The dataset is deliberately absent from Git and from the images.
+The scripts do not download data or require Kaggle credentials at runtime.
+
+### 3. Build and run Python
+
+macOS/Linux:
 
 ```bash
 mkdir -p outputs/python
@@ -182,12 +86,7 @@ docker run --rm \
   mlds400-titanic-python:part3
 ```
 
-The commands above work on macOS/Linux. `--user` matches the host user's UID/GID
-so generated files belong to you. The data mount is read-only; only `outputs/`
-is written. `--rm` removes the stopped container and leaves the output files.
-No local Python installation is required.
-
-For Windows PowerShell with Docker Desktop running Linux containers:
+Windows PowerShell with Docker Desktop using Linux containers:
 
 ```powershell
 New-Item -ItemType Directory -Force outputs/python | Out-Null
@@ -198,46 +97,165 @@ docker run --rm `
   mlds400-titanic-python:part3
 ```
 
-The terminal prints the dataset dimensions, missing values, descriptive
-statistics, each feature change, fitted imputation values, model settings,
-training and validation accuracies, confusion matrix, and test predictions.
-These outputs cover assignment questions 14–18 without opening the source code.
+Wait for `Part 3 run completed successfully.` in the terminal. The image uses
+Python 3.13 and the exact dependency versions in `src/python/requirements.txt`.
+The Docker build context is `src/python/`, not the repository root.
 
-The script writes three local files, all ignored by Git:
+### 4. Build and run R
+
+macOS/Linux:
+
+```bash
+mkdir -p outputs/r
+docker build -t mlds400-titanic-r:part4 src/r
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --mount type=bind,source="$(pwd)/src/data",target=/data,readonly \
+  --mount type=bind,source="$(pwd)/outputs/r",target=/outputs \
+  mlds400-titanic-r:part4
+```
+
+Windows PowerShell with Docker Desktop using Linux containers:
+
+```powershell
+New-Item -ItemType Directory -Force outputs/r | Out-Null
+docker build -t mlds400-titanic-r:part4 src/r
+docker run --rm `
+  --mount "type=bind,source=$((Get-Location).Path)/src/data,target=/data,readonly" `
+  --mount "type=bind,source=$((Get-Location).Path)/outputs/r,target=/outputs" `
+  mlds400-titanic-r:part4
+```
+
+Wait for `Part 4 run completed successfully.` R reads the same data directly and
+runs independently of Python. Its image pins R **4.5.3** by multi-architecture
+digest. `install_packages.R` installs **jsonlite 2.0.0** and **digest 0.6.37**,
+using CRAN's archive when needed, and verifies their versions. `stats` and
+`utils` ship with R. The build context is `src/r/`.
+
+Both containers run as unprivileged users. On macOS/Linux, `--user` matches your
+host UID/GID so saved files belong to you. The input mount is read-only. `--rm`
+removes each stopped container while leaving results in the host's `outputs/`.
+These image tags identify assignment parts and are the same tags used in the
+verified commands; they can be built directly from the final `main` branch.
+
+## Results and generated files
+
+Each script prints dataset dimensions, missing values, descriptive statistics,
+feature changes, fitted preprocessing values, model settings, training and
+validation accuracy, a confusion matrix, test predictions, and score status.
+The grader can inspect these terminal outputs for questions 14–18 without
+opening either analysis script.
+
+| Metric | Python | R |
+| --- | --- | --- |
+| Full-training accuracy | 82.94% | 79.91% |
+| Held-out validation accuracy | 83.80% | 82.68% |
+| Recorded Kaggle public test score | 0.76555 | 0.76315 |
+
+The two validation sets contain different passengers, so their percentages are
+not a controlled comparison. Kaggle scores are from actual completed submissions
+on November 8, 2026. Official test labels are withheld; local test accuracy is
+therefore `null`. Each script shows its recorded external score only when the
+new prediction file matches the previously scored CSV's SHA-256 hash. Neither
+script substitutes `gender_submission.csv` for true labels or contacts Kaggle
+while running. Model-specific details follow below.
+
+Each language writes three files:
 
 | File | Contents |
 | --- | --- |
-| `outputs/python/submission.csv` | 418 predictions with exactly `PassengerId,Survived`, ready for Kaggle |
-| `outputs/python/validation_predictions.csv` | Held-out passenger IDs, known labels, and predicted labels |
-| `outputs/python/metrics.json` | Accuracies, split sizes, seed, confusion matrix, and input SHA-256 hashes |
+| `outputs/python/submission.csv` and `outputs/r/submission.csv` | 418 predictions with exactly `PassengerId,Survived`, in official test row order |
+| `outputs/python/validation_predictions.csv` and `outputs/r/validation_predictions.csv` | Held-out passenger IDs, known labels, and model predictions |
+| `outputs/python/metrics.json` and `outputs/r/metrics.json` | Accuracies, split sizes, confusion matrix, seed, input/output hashes, and any matching recorded score |
 
-Running again replaces these generated files in the selected output directory.
-If a CSV is missing or belongs to another dataset, the script exits with a
-clear error. Create both host directories before using Docker's `--mount`.
+Repeated runs replace these files in the mounted output directory. All generated
+results and downloaded data remain local and are ignored by Git. To obtain a
+new Kaggle score after changing a model, submit its new `submission.csv` using
+**Submit Prediction** on the competition page.
 
-### Optional: run locally and check the code
+## Troubleshooting
 
-After creating the Part 2 virtual environment:
+| Symptom | Action |
+| --- | --- |
+| Docker cannot connect to its daemon | Start Docker Desktop, or run `colima start` on a Mac using Colima; retry `docker version`. |
+| `bind source path does not exist` | Run from the repository root and create `src/data/` plus the appropriate `outputs/` directory before `docker run`. |
+| `Missing /data/train.csv` or `test.csv` | Extract the official CSVs directly into `src/data/` and include the data mount shown above. |
+| Missing Titanic columns or overlapping passenger IDs | Confirm that both files came from the official Titanic ZIP; do not substitute unrelated or copied training files. |
+| Permission denied while saving results | On macOS/Linux, retain the `--user` option and choose an output directory you own. On Docker Desktop, ensure the project folder is shared with Docker. |
+| Base-image or package download fails | Check internet access, then rerun the build. Completed dependency layers can be reused. |
+| No matching recorded Kaggle score | Predictions differ from the recorded submission; upload this new CSV for a new score. Validation metrics remain available locally. |
+| Local Python/R reports missing packages | Use the optional installation commands below, or use Docker without local language installations. |
+
+## Optional local execution and checks
+
+Docker is sufficient for grading. These commands support development or running
+checks directly on your computer.
+
+### Python environment and local run
+
+Use Python **3.13**, from the repository root on macOS/Linux:
 
 ```bash
+python3.13 -m venv .venv
+.venv/bin/python -m pip install -r src/python/requirements.txt
+.venv/bin/python -m pip check
+.venv/bin/python src/python/check_environment.py
 .venv/bin/python src/python/main.py
 .venv/bin/python -m unittest discover -s src/python -p 'test_*.py' -v
 ```
 
-On Windows, use `.venv\Scripts\python.exe` instead of `.venv/bin/python`.
-The default paths are based on the script's location, so local execution also
-works from another working directory. Custom locations are supported:
+On Windows, create the environment with `py -3.13 -m venv .venv` and replace
+`.venv/bin/python` with `.venv\Scripts\python.exe` in the remaining commands.
+The same requirements file pins direct and runtime dependencies locally and in
+Docker. Recreate environments on each computer; `.venv/` stays out of Git.
+
+The Part 2 environment check also runs without Titanic data in the built image:
+
+```bash
+docker run --rm mlds400-titanic-python:part3 python check_environment.py
+```
+
+It uses four synthetic rows to verify CSV parsing, numerical operations, and
+model fitting; it is not the Titanic analysis. Five Python regression tests
+cover preprocessing isolation, missing/unseen categories, target/ID exclusion,
+output ordering and metrics, stale external scores, and invalid inputs.
+
+### R environment and local run
+
+With R **4.5.3** installed:
+
+```bash
+Rscript --vanilla src/r/install_packages.R
+Rscript --vanilla src/r/main.R
+Rscript --vanilla src/r/test_main.R
+```
+
+The installer skips packages already installed at the pinned versions. Local
+source installation requires an R compilation toolchain; Docker includes it.
+Six R regression checks cover training-only preprocessing, missing/unseen values,
+outcome/ID exclusion, a deterministic disjoint split, CSV/JSON outputs, stale
+external scores, and invalid input handling. They can run without Titanic data
+inside the built image:
+
+```bash
+docker run --rm mlds400-titanic-r:part4 Rscript --vanilla test_main.R
+```
+
+Both scripts locate their default data/output directories relative to their
+source files. Custom paths are supported from the repository root:
 
 ```bash
 .venv/bin/python src/python/main.py --data-dir src/data --output-dir outputs/python
+Rscript --vanilla src/r/main.R --data-dir src/data --output-dir outputs/r
 ```
 
-The regression tests use small synthetic fixtures to check leakage,
-missing values and unseen categories, prediction row order, honest reporting
-of missing test labels, and invalid input handling. These fixtures are only
-software tests; the results below were measured using the actual Titanic data.
+The documented Docker workflows were verified on macOS Apple Silicon with
+Colima (Linux ARM64), using the official CSVs. Each language's local and Docker
+outputs matched byte for byte. Windows PowerShell commands are provided but
+were not executed on this Mac. Synthetic regression fixtures test software
+behavior; the reported model accuracies use real Titanic data.
 
-### Model and evaluation
+## Python model and evaluation
 
 The predictors are `Age`, `Fare`, `FamilySize = SibSp + Parch + 1`, `Pclass`,
 `Sex`, `Embarked`, and a title extracted from `Name`. Common equivalent titles
@@ -284,90 +302,7 @@ upload `outputs/python/submission.csv`, and inspect the evaluated submission.
 See the [official data description](https://www.kaggle.com/competitions/titanic/data)
 and [evaluation instructions](https://www.kaggle.com/competitions/titanic/overview/evaluation).
 
-## Part 4: run the R workflow with Docker
-
-Use the same official `src/data/train.csv` and `src/data/test.csv` downloaded
-above. R reads these files directly and runs independently of the Python code.
-From the repository root, with Docker running:
-
-```bash
-mkdir -p outputs/r
-docker build -t mlds400-titanic-r:part4 src/r
-docker run --rm \
-  --user "$(id -u):$(id -g)" \
-  --mount type=bind,source="$(pwd)/src/data",target=/data,readonly \
-  --mount type=bind,source="$(pwd)/outputs/r",target=/outputs \
-  mlds400-titanic-r:part4
-```
-
-For Windows PowerShell with Docker Desktop running Linux containers:
-
-```powershell
-New-Item -ItemType Directory -Force outputs/r | Out-Null
-docker build -t mlds400-titanic-r:part4 src/r
-docker run --rm `
-  --mount "type=bind,source=$((Get-Location).Path)/src/data,target=/data,readonly" `
-  --mount "type=bind,source=$((Get-Location).Path)/outputs/r,target=/outputs" `
-  mlds400-titanic-r:part4
-```
-
-No local R installation is needed for Docker. The image pins official `r-base`
-**4.5.3** to a multi-architecture digest that supports both Apple Silicon and
-Intel/AMD computers. `install_packages.R` installs **jsonlite 2.0.0** for JSON
-and **digest 0.6.37** for file hashes from CRAN, using its archive when a pinned
-release is no longer current. It checks the installed versions and stops on a
-mismatch. The `stats` and `utils` packages ship with R. The first build requires
-internet access; later builds reuse cached packages.
-
-The container uses an unprivileged account. On macOS/Linux, `--user` makes the
-output files belong to your host user. Data are mounted read-only and excluded
-from the build context. Results go to `outputs/r/`, separately from Python:
-
-| File | Contents |
-| --- | --- |
-| `outputs/r/submission.csv` | 418 R predictions, with exactly `PassengerId,Survived` |
-| `outputs/r/validation_predictions.csv` | The R holdout's passenger IDs, true labels, and predictions |
-| `outputs/r/metrics.json` | R accuracies, confusion matrix, split sizes, hashes, and any verified external score |
-
-The terminal prints exploration, missing counts, transformations, fitted
-imputation values and category levels, the model formula and coefficients,
-training/validation metrics, test predictions, and Kaggle score status. The
-container exits after finishing; generated files persist on the host. Repeated
-runs replace files in the selected output directory.
-
-### Optional: run R locally
-
-With **R 4.5.3** installed, run from the repository root:
-
-```bash
-Rscript --vanilla src/r/install_packages.R
-Rscript --vanilla src/r/main.R
-Rscript --vanilla src/r/test_main.R
-```
-
-The installer skips packages already installed at the correct versions. If a
-source installation is needed locally, a working R package compilation toolchain
-is required; Docker already includes it. Use Docker if you do not want to set
-up local compilers. Local data and output defaults are relative to the script's
-location. To use different directories:
-
-```bash
-Rscript --vanilla src/r/main.R --data-dir src/data --output-dir outputs/r
-```
-
-The same regression checks can run inside the built image without Titanic data:
-
-```bash
-docker run --rm mlds400-titanic-r:part4 Rscript --vanilla test_main.R
-```
-
-Six synthetic-data checks cover training-only preprocessing, missing and unseen
-categories, outcome/ID exclusion, a deterministic disjoint holdout, CSV/JSON
-outputs, stale external-score rejection, and actionable input errors. Both local
-and container checks passed. Actual Titanic outputs also match byte for byte
-between local R and Docker.
-
-### R model and evaluation
+## R model and evaluation
 
 The R model uses `stats::glm(..., family = binomial(link = "logit"))` with
 `Age`, `LogFare = log(1 + Fare)`, `FamilySize = SibSp + Parch + 1`, `Pclass`,
@@ -403,32 +338,63 @@ score **0.76315**. This is recorded in `src/r/kaggle_score.json` and shown only 
 the generated CSV matches the scored file's SHA-256 hash. This external score
 is distinct from local validation and is not recomputed during the script run.
 
-## Branch and pull request workflow
-
-- `main`: completed work ready for submission.
-- `develop`: integration branch for the assignment.
-- `feature/titanic`: working branch based on the same starting commit as `develop`.
-- `codex/part2-environment`: Part 2 working branch created from `develop`.
-- `codex/part3-python-model`: Part 3 working branch created from `develop`.
-- `codex/part4-r-model`: Part 4 working branch created from `develop`.
-
-Part 1 changes follow this pull request sequence:
+## Repository structure
 
 ```text
-feature/titanic → develop → main
+mlds400-titanic/
+├── .gitignore
+├── README.md
+├── outputs/                    # Generated locally; ignored by Git
+│   ├── python/
+│   └── r/
+└── src/
+    ├── data/                   # Downloaded locally; ignored by Git
+    ├── python/
+    │   ├── .dockerignore
+    │   ├── Dockerfile
+    │   ├── requirements.txt
+    │   ├── check_environment.py
+    │   ├── kaggle_score.json
+    │   ├── main.py
+    │   └── test_main.py
+    └── r/
+        ├── .dockerignore
+        ├── Dockerfile
+        ├── install_packages.R
+        ├── kaggle_score.json
+        ├── main.R
+        └── test_main.R
 ```
 
-Each pull request includes a summary of the changes and the checks performed.
-Keep these branches available so the assignment workflow can be inspected.
-For subsequent parts, update `develop` and create a new working branch from it
-before making changes. Part 2 follows `codex/part2-environment → develop`;
-Part 3 follows `codex/part3-python-model → develop`, and Part 4 follows
-`codex/part4-r-model → develop`. The final merge from
-`develop` to `main` is reserved for Part 5.
+All source code lives in `src/`. Git does not track empty directories, so create
+`src/data/` and the output folders after cloning. Each `.dockerignore` allows
+only the source/configuration files needed for that image.
 
-## Verify the setup
+## Assignment and Git workflow
 
-Run from the repository root:
+| Part | Delivered work |
+| --- | --- |
+| 1 | Public repository, `main`/`develop`/working branches, Git ignore rules, and initial PRs |
+| 2 | Pinned Python requirements, Docker environment, smoke check, and optional local virtual environment |
+| 3 | Python analysis, logistic regression, validation, predictions, Docker verification, and PR to `develop` |
+| 4 | Independent R analysis, package installer, Docker image, evaluation, and PR to `develop` |
+| 5 | Final reproducible README and the `develop → main` submission PR |
+
+The branch history is retained for inspection:
+
+- `main`: final submission branch (the assignment's `master` equivalent).
+- `develop`: integration branch for completed parts.
+- `feature/titanic`: Part 1 working branch.
+- `codex/part2-environment`: Part 2 environment work.
+- `codex/part3-python-model`: Part 3 Python model.
+- `codex/part4-r-model`: Part 4 R model.
+- `codex/part5-final-readme`: final README preparation.
+
+Working branches are integrated through pull requests into `develop`. Part 5
+submits the complete project through a final `develop → main` pull request.
+See the repository's [pull request history](https://github.com/xingsun19/mlds400-titanic/pulls?q=is%3Apr).
+
+To inspect tracked files and ignore rules from the repository root:
 
 ```bash
 git branch -a
@@ -436,7 +402,5 @@ git check-ignore -v src/data/train.csv src/data/test.csv outputs/python/submissi
 git ls-files
 ```
 
-The branch list should include `main`, `develop`, and `feature/titanic` (some may
-appear under `remotes/origin/`). The ignore check should show a matching rule for
-each sample path, even before the files are downloaded. The tracked-file list
-should contain the project files and no dataset or virtual-environment files.
+The tracked-file list contains source and documentation, with no downloaded
+datasets, generated predictions, credentials, or virtual environments.
