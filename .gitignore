@@ -5,6 +5,9 @@ test.csv
 gender_submission.csv
 titanic.zip
 
+# Generated predictions, metrics, and terminal logs stay local.
+/outputs/
+
 # macOS and editor files
 .DS_Store
 ._*
