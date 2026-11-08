@@ -1,0 +1,31 @@
+# Dataset stays local; never commit the Titanic download.
+/src/data/
+train.csv
+test.csv
+gender_submission.csv
+titanic.zip
+
+# macOS and editor files
+.DS_Store
+._*
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local environments, caches, and credentials
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.env
+.env.*
+!.env.example
+kaggle.json
+
+# R session and project state
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
