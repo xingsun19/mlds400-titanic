@@ -1,0 +1,7 @@
+# Whitelist source files; datasets and outputs are mounted at runtime.
+**
+!Dockerfile
+!install_packages.R
+!main.R
+!test_main.R
+!kaggle_score.json

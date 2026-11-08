@@ -1,0 +1,7 @@
+# Keep datasets, environments, and generated results out of the image.
+**
+!Dockerfile
+!requirements.txt
+!check_environment.py
+!main.py
+!kaggle_score.json
